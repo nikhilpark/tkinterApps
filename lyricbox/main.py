@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Tk, Label, Frame, BOTH, Canvas, LEFT, VERTICAL, RIGHT, Y, Entry, Button
 from tkinter import ttk
 from PIL import ImageTk, Image
 
@@ -60,9 +60,9 @@ my_canvas.create_window((0, 0), window=second_frame, anchor="nw")
 
                                                                                            '''
 # IMAGE
-
 my_img1 = ImageTk.PhotoImage(Image.open(r"images\lyric_box.jpg"))
 imageLabel = Label(second_frame, image=my_img1)
+
 # INPUT
 myLabel1 = Label(second_frame, text="Enter name of the song")
 songName = Entry(second_frame, width=50, borderwidth=5)
