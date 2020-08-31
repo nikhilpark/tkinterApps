@@ -1,2 +1,2 @@
 # tkinterApps
-some simple tkinter based application
+Some simple tkinter based applications
