@@ -1,19 +1,23 @@
 from tkinter import Tk, Label, Frame, BOTH, Canvas, LEFT, VERTICAL, RIGHT, Y, Entry, Button
 from tkinter import ttk
+from io import BytesIO
 from PIL import ImageTk, Image
-
+from bs4 import BeautifulSoup
 import requests
+global albumartimg
 
 root = Tk()
 root.title('Lyric Box')
 root.iconbitmap(r"images\songwriter.ico")
-root.geometry("400x600")
+root.geometry("450x600")
 
 
 # button command
 
 
 def getlyrics():
+    global albumartimg
+
     artist = artistName.get()
     title = songName.get()
     url = r"https://api.lyrics.ovh/v1/" + artist + "/" + title
@@ -21,22 +25,52 @@ def getlyrics():
     response = requests.get(url)
     lyrics = str(response.content)
     lyrics = (lyrics[13:-3])
-    lyrics = lyrics.replace(r"\\n", "\n").replace("\\", "")
+    lyrics = lyrics.replace(r"\\n", "\n").replace("\\r", "")
+    lyrics = lyrics.replace("\\", "").replace("xe2x80x85", "").replace("xc2x85", "")
 
-    mylabel3 = Label(second_frame,text="LYRICS :")
-    mylabel3.grid(row=6,column=0)
+    urlalbum = requests.get(
+        "https://www.azlyrics.com/lyrics/" + artist.lower().replace(" ", "")
+        + "/" + title.lower().replace(" ", "") + ".html",
+        timeout=10
+    )
+
+    srcc = urlalbum.content
+    soupp = BeautifulSoup(srcc, 'lxml')
+    albumname = soupp.find_all("div", {"class": "songinalbum_title"})[0]
+    albumname = (str(albumname)[42:-18]).replace("&amp;", "&")
+
+    urlalbumart = requests.get(
+        "https://www.last.fm/music/" + artist.replace(" ", "+")
+        + "/" + albumname.replace(" ", "+") + "/+images",
+        timeout=10
+    )
+    src = urlalbumart.content
+    soup = BeautifulSoup(src, 'lxml')
+    albumart = soup.find_all("a", {"class": "image-list-item"})[0]
+    albumart = (str(albumart))
+    locate = albumart.find("src") + 5
+    albumart = (albumart[locate:-8]) + ".png"
+    imgresponse = requests.get(albumart)
+    img_data = imgresponse.content
+
+    albumartimg = ImageTk.PhotoImage(Image.open(BytesIO(img_data)))
+    artlabel = Label(second_frame, image=albumartimg)
+    artlabel.grid(row=0, column=0, pady=(20, 10))
+
+    mylabel3 = Label(second_frame, text="LYRICS :")
+    mylabel3.grid(row=8, column=0)
+
     mylabel4 = Label(second_frame, text="------------------------")
-    mylabel4.grid(row=7, column=0)
+    mylabel4.grid(row=9, column=0)
 
     mylabel5 = Label(second_frame, text=lyrics)
-    mylabel5.grid(row=8, column=0)
+    mylabel5.grid(row=10, column=0, padx=10)
 
     mylabel6 = Label(second_frame, text="------------------------")
-    mylabel6.grid(row=9, column=0,pady=10)
+    mylabel6.grid(row=11, column=0, pady=10)
 
 
 '''
-
                                            FULL SCREEN SCROLL BAR STARTS
                                                                                                     '''
 main_frame = Frame(root)
@@ -57,7 +91,6 @@ my_canvas.create_window((0, 0), window=second_frame, anchor="nw")
 
 '''
                                FULL SCROLL BAR ENDS
-
                                                                                            '''
 # IMAGE
 my_img1 = ImageTk.PhotoImage(Image.open(r"images\lyric_box.jpg"))
@@ -70,15 +103,19 @@ songName = Entry(second_frame, width=50, borderwidth=5)
 myLabel2 = Label(second_frame, text="Enter name of Artist")
 artistName = Entry(second_frame, width=50, borderwidth=5)
 
+
 # BUTTON
 go_Btn = Button(second_frame, text="Go!", command=getlyrics)
 
 # GRID
 imageLabel.grid(row=0, column=0, pady=(20, 10))
-myLabel1.grid(row=1, column=0, pady=(20, 10), padx=140)
+myLabel1.grid(row=1, column=0, pady=(20, 10), padx=160)
 songName.grid(row=2, column=0, padx=10, pady=(0, 10))
+
 myLabel2.grid(row=3, column=0, pady=(20, 10))
 artistName.grid(row=4, column=0, padx=10, pady=(0, 10))
-go_Btn.grid(row=5, column=0, pady=(0, 20))
+
+
+go_Btn.grid(row=7, column=0, pady=(0, 20))
 
 root.mainloop()
