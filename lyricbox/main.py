@@ -102,7 +102,7 @@ def buttonaction():
     mylabel7.grid(row=8, column=0)
 
     getinput()
-    getalbumname()
+    
     try:
         getalbumname()
         
