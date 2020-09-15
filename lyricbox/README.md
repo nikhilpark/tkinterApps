@@ -1,5 +1,5 @@
     
- Install reqirements using
+ Install the reqirements using
   
     pip install -r requirements.txt
 
